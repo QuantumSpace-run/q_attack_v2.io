@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEEP SIGNAL — A Quantum Decision Exercise</title>
+<style>
+  :root { --bg:#0d1321; --panel:#1d2436; --accent:#6d4aff; --gold:#d4af37; --text:#e8e9f0; --danger:#e05252; --success:#4caf7d; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Arial,sans-serif; }
+  body { background:var(--bg); color:var(--text); padding:20px; max-width:920px; margin:0 auto; }
+  .header { text-align:center; padding:22px; border-bottom:2px solid var(--accent); margin-bottom:20px; }
+  .header h1 { font-size:2.2em; letter-spacing:4px; color:var(--accent); }
+  .header p { color:#8890a8; margin-top:6px; }
+  .hud { display:flex; justify-content:space-between; align-items:center; background:var(--panel); border-radius:10px; padding:12px 18px; margin-bottom:16px; font-size:0.95em; border:1px solid #33406b; }
+  .hud .act { color:var(--gold); font-weight:bold; letter-spacing:1px; }
+  .hud .threat { color:var(--danger); }
+  .hud .threat.low { color:var(--success); }
+  .section { background:var(--panel); border-radius:10px; padding:22px; margin-bottom:20px; border-left:4px solid var(--accent); }
+  .section h2 { color:var(--gold); margin-bottom:12px; font-size:1.15em; text-transform:uppercase; letter-spacing:1px; }
+  .sit { line-height:1.65; color:#c4c9da; }
+  .sit strong { color:var(--text); }
+  .tag { display:inline-block; background:var(--accent); color:#fff; padding:2px 8px; border-radius:4px; font-size:.72em; font-weight:bold; }
+  .option { display:block; background:#141a2c; border:2px solid #33406b; border-radius:8px; padding:12px 14px; margin:8px 0; cursor:pointer; transition:all .15s; }
+  .option:hover { border-color:var(--accent); }
+  .option.selected { border-color:var(--gold); background:#232d4d; box-shadow:0 0 8px rgba(212,175,55,.3); }
+  .option input { margin-right:8px; accent-color:var(--gold); }
+  .option .hint { font-size:.83em; color:#7d86a3; margin-top:4px; }
+  button.primary { background:var(--accent); color:#fff; border:none; padding:14px 32px; font-size:1.05em; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; letter-spacing:1px; }
+  button.primary:hover { filter:brightness(1.2); }
+  button:disabled { background:#444; cursor:not-allowed; }
+  .result-card { border-radius:8px; padding:16px; margin:12px 0; line-height:1.55; }
+  .result-full { background:rgba(76,175,125,.15); border-left:4px solid var(--success); }
+  .result-part { background:rgba(212,175,55,.12); border-left:4px solid var(--gold); }
+  .result-none { background:rgba(224,82,82,.15); border-left:4px solid var(--danger); }
+  .clue { background:rgba(109,74,255,.12); border:1px dashed var(--accent); border-radius:6px; padding:10px 12px; margin:10px 0; font-size:.9em; color:#c4c9da; }
+  .score-box { text-align:center; padding:20px; font-size:1.3em; background:#141a2c; border-radius:10px; margin:16px 0; border:1px solid var(--gold); }
+  .score-box .points { font-size:2.2em; color:var(--gold); font-weight:bold; }
+  .hidden { display:none; }
+  .small-note { font-size:.85em; color:#7d86a3; margin-top:6px; }
+  .progress { display:flex; gap:6px; margin:0 auto 16px; max-width:420px; }
+  .progress div { flex:1; height:6px; border-radius:3px; background:#33406b; }
+  .progress div.done { background:var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌊 DEEP SIGNAL</h1>
+  <p>A Sequential Multi-Domain Quantum Decision Exercise</p>
+</div>
+
+<!-- HUD -->
+<div class="hud hidden" id="hud">
+  <span class="act" id="hud-act">ACT I</span>
+  <span id="hud-timer">—</span>
+  <span class="threat low" id="hud-threat">RED ADVANTAGE: LOW</span>
+</div>
+<div class="progress hidden" id="progress"><div></div><div></div><div></div><div></div><div></div></div>
+
+<!-- START -->
+<div id="screen-start">
+  <div class="section">
+    <h2>operation order — 05:30 local</h2>
+    <div class="sit">
+      <p>You are the duty operations officer of a joint task force transiting a contested littoral corridor: a carrier group at sea, an attack submarine on patrol ahead of you, coastal defense units ashore, and a networked command system tying it together.</p>
+      <br>
+      <p>Over the past 72 hours, three unexplained events have accumulated: a planned patrol was ambushed though its orders traveled only over <strong>encrypted channels</strong>; your submarine was briefly shadowed <strong>despite running silent</strong>; and enemy strike coordination has become <strong>suspiciously efficient</strong>.</p>
+      <br>
+      <p>Intelligence assesses the adversary is fielding <strong>advanced quantum technologies</strong> — but which ones, in which combination, is unknown. Over the next hour, the crisis will unfold in <strong>five acts</strong>. Each act presents a situation and six or more possible moves. Choose one. Every choice carries consequences into the acts that follow.</p>
+      <br>
+      <p><strong>Your goal:</strong> read the indicators correctly, apply the right quantum capability at the right moment, and correctly identify the adversary's technology stack at the end.</p>
+    </div>
+  </div>
+  <button class="primary" onclick="startGame()">▶ BEGIN — ACT I</button>
+  <p class="small-note" style="text-align:center;margin-top:8px;">Individual play · approx. 20–30 minutes · diagnose before you act.</p>
+</div>
+
+<!-- GAME BODY -->
+<div id="screen-game" class="hidden">
+  <div class="section" id="act-brief"></div>
+  <div class="section" id="act-options"></div>
+  <div class="section hidden" id="act-resolution"></div>
+</div>
+
+<!-- FINAL -->
+<div id="screen-final" class="hidden">
+  <div class="section">
+    <h2>🎖️ final assessment</h2>
+    <div id="final-container"></div>
+    <div class="score-box">
+      TOTAL SCORE<br><span class="points" id="final-score">0 / 12</span><br>
+      <span id="score-verdict" style="font-size:.8em;"></span>
+    </div>
+  </div>
+  <div class="section">
+    <h2>🧠 the convergence lesson</h2>
+    <div class="sit">
+      <p>The adversary's stack acted as <strong>one system</strong>: a <strong>quantum computer</strong> ran harvest-now-decrypt-later against your legacy crypto while simultaneously optimizing the drone swarm against your defenses; <strong>quantum sensing</strong> (magnetometry, plus undersea nodes found by gravimetry) tracked your submarine without emitting anything; and <strong>quantum communication (QKD)</strong> made their control links physically unreadable.</p>
+      <br>
+      <p>The winning counters were likewise layered: <strong>PQC migration first</strong> (because crypto is the foundation everything else stands on, and migration takes years — it must be in place <em>before</em> the emergency), sensing to <strong>physically locate</strong> what electronic warfare cannot read, and sensor fusion to <strong>starve the optimizer</strong> of a predictable picture.</p>
+      <br>
+      <p><strong>Key takeaway:</strong> quantum advantage is a portfolio, not a gadget. Diagnose the indicator, then pick the tool. The decision takes 90 seconds — the preparation takes years.</p>
+    </div>
+  </div>
+  <button class="primary" onclick="location.reload()">↺ PLAY AGAIN</button>
+  <p class="small-note" style="text-align:center;margin-top:8px;">Facilitator tip: reset and replay — the correct answers are marked in the code (GROUND TRUTH), and can be swapped for variant rounds.</p>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// GROUND TRUTH — facilitators can edit the 'pts' and outcome texts
+// to create variant rounds. pts: 2 = correct, 1 = partial, 0 = fail
+// ═══════════════════════════════════════════════════════════════
+const ACTS = [
+{
+  id: 1, title: "ACT I — THE WHISPERING NET",
+  tag: "CYBER / C2",
+  brief: `
+    <p><span class="tag">CYBER</span> 06:10. Your cryptologic support team reports heavy, structured data exfiltration toward an unknown endpoint — it has been running for at least <strong>weeks</strong>. The puzzle: your transmission links show <strong>no intrusion signature whatsoever</strong>. No malware, no implant, no exploited vulnerability. The encryption protocol itself reports fully healthy.</p>
+    <br>
+    <p>Your predecessor's staff assumed a leak requires a breach. As the duty officer, what is your assessment and your move?</p>`,
+  options: [
+    { v:"pqc", label:"🔐 Post-Quantum Cryptography (PQC) emergency migration", hint:"Assumes the math of your legacy algorithm has been broken — not the network", pts:2, r:"<strong>DECISIVE MOVE.</strong> Weeks of quiet exfiltration with a spotless network points to only one culprit: your legacy RSA/ECC has been broken by a quantum computer ('harvest now, decrypt later'). Migrating to post-quantum algorithms cuts the tap at the root. Everything your force plans from now on travels safe." },
+    { v:"forensic", label:"🔬 Deep cryptologic forensics sweep", hint:"Diagnostic: find HOW they are reading you before acting", pts:1, clue:"Forensics finds no breach artifact at all — the adversary is reading traffic without touching your network. Mathematical decryption suspected. (You now KNOW PQC is the answer — but the leak continues meanwhile.)", r:"<strong>GOOD INSTINCT, INCOMPLETE EFFECT.</strong> Diagnosis before therapy is right — but in a live crisis, knowing the wound without closing it costs time. The exfiltration continues during your sweep." },
+    { v:"segment", label:"🚫 Network segmentation & full rebuild", hint:"Classic response to an implant inside the perimeter", pts:0, r:"<strong>INEFFECTIVE.</strong> You rebuilt walls the enemy never climbed. There is no implant — segmentation burns days of effort and the exfiltration flows on, now through rebuilt channels with the same legacy crypto." },
+    { v:"honeypot", label:"🍯 Deploy honeypots & deception feeds", hint:"Feed the intruder curated garbage", pts:0, r:"<strong>TANTALIZING, BUT WRONG MODEL.</strong> Your honeypots sit untouched — the adversary isn't sniffing around for data, they are reading everything wholesale. Worse: they silently ignore your bait, which itself tells them you noticed." },
+    { v:"insider", label:"🕵️ Counter-intelligence insider hunt", hint:"Someone with access is passing plans", pts:0, r:"<strong>DARK ALLEY.</strong> Weeks of investigations tear at trust and find nothing — because there is no human leak. Meanwhile the volume of harvested traffic grows." },
+    { v:"qkd", label:"📡 Establish QKD emergency link to HQ", hint:"Physics-secured key exchange for the core command channel", pts:1, r:"<strong>HALF RIGHT.</strong> The HQ trunk is now the most secure link you own — no one will ever read it. But your tactical fleet nets still run on broken legacy crypto, and that is where the harvest is happening." },
+  ],
+  aftermath:{ fail:"⚠️ CONSEQUENCE: The adversary's harvest of your command traffic CONTINUES. RED ADVANTAGE rises — they are listening to what you plan in Acts II–IV." }
+},
+{
+  id: 2, title: "ACT II — SILENT DEPTHS",
+  tag: "MARITIME / UNDERSEA SENSING",
+  brief: `
+    <p><span class="tag">MARITIME</span> 09:47. Your attack submarine — deep, quiet, emission-free for 14 hours — reports it has been <strong>shadowed for two hours</strong> by adversary surface units closing in a deliberate pattern. No active sonar was ever detected. Simultaneously, hydrographic survey ships note <strong>minor unexplained anomalies on the seafloor</strong> along the corridor — possibly debris, possibly something else.</p>
+    <br>
+    <p>Something below is seeing you without making a sound. You hold a battery of undersea sensing and denial capabilities. One move — what is it?</p>`,
+  options: [
+    { v:"magsweep", label:"🧲 Quantum magnetometer counter-sweep", hint:"Hunt the hunter: detect their magnetic sensing arrays", pts:2, r:"<strong>DECISIVE MOVE.</strong> If they track you without emissions, they are sensing the sub's magnetic signature. Your airborne quantum magnetometer sweep locates their covert sensor drones — silent, anchored, magnetic. Your submarine goes dark to THEM the moment those drones are destroyed." },
+    { v:"grav", label:"⚖️ Cold-atom gravimetric survey of the corridor", hint:"Map density anomalies — undersea infrastructure detection", pts:1, clue:"Gravimetry reveals an UNMAPPED CABLE AND NODE FIELD on the seafloor — a distributed undersea sensor grid, fiber-connected. (Critical intelligence for the final act.)", r:"<strong>STRATEGIC GOLD, TACTICAL MISS.</strong> You map their entire undersea network — but the magnetometer drones actively tracking your sub stay dark to gravimetry. The shadowing continues, though you now understand the theater far better." },
+    { v:"seabed", label:"🪸 Deploy your own distributed seabed quantum sensor network", hint:"Persistent undersea surveillance of the corridor", pts:1, r:"<strong>SOUND INVESTMENT, TOO SLOW.</strong> Your nodes start streaming a persistent picture of the corridor — genuinely valuable, and they do catch two more enemy drones over the coming hours. But your submarine is in trouble NOW." },
+    { v:"qlidar", label:"🔦 Quantum-enhanced lidar bathymetry sweep", hint:"Ultra-precise ranging to detect submerged objects", pts:0, r:"<strong>WRONG PHYSICS.</strong> Quantum lidar bathymetry excels at charting water depth and seafloor structure — but the enemy trackers are small, quiet, and drifting; they scatter neither enough light nor enough signal to be resolved at range. Beautiful charts. Still hunted." },
+    { v:"decoy", label:"🎭 Towed acoustic decoy array & evasion", hint:"Spoof and run — classic silencing tradecraft", pts:0, r:"<strong>OLD PLAYBOOK.</strong> Decoys and evasive maneuvers confuse torpedoes guided by SOUND. The enemy here never listened — they SENSED the magnetic field. Your sub moves; the shadow follows precisely." },
+    { v:"withdraw", label:"➡️ Withdraw the submarine beyond their reach", hint:"Simple, safe — assume the fix is temporary", pts:0, r:"<strong>RELIEF, THEN REALITY.</strong> The pressure lifts for six hours — until their sensor grid re-acquires the hull as soon as it returns to depth. You bought a pause, not a solution, and conceded the corridor." },
+  ],
+  aftermath:{ fail:"⚠️ CONSEQUENCE: Enemy undersea sensing continues to hold your maneuver picture. RED ADVANTAGE rises — your fleet's freedom of movement shrinks." }
+},
+{
+  id: 3, title: "ACT III — GHOST HORIZON",
+  tag: "AIR / MULTI-DOMAIN EFFECTS",
+  brief: `
+    <p><span class="tag">AIR</span> 13:12. Early warning collapses into chaos: a <strong>swarm of 200+ drones</strong> crosses the coast toward your carrier group at wavetop height. The swarm <strong>reshapes formation with every radar sweep</strong> — as if it calculates your sensor coverage in real time and threads through the seams. Your fighters hold limited magazine depth. Along the coast, your land-based air defense batteries report <strong>false GPS positions</strong> for the swarm and are firing into empty sky.</p>
+    <br>
+    <p>You hold one salvo of each counter-capability. Choose your primary move against the swarm:</p>`,
+  options: [
+    { v:"fusion", label:"🌐 Full networked sensor fusion — every radar linked", hint:"Deny the swarm a predictable coverage pattern to exploit", pts:2, r:"<strong>DECISIVE MOVE.</strong> The swarm survives by predicting your coverage and threading gaps — the work of a quantum optimizer fed by real-time data. Fusing EVERY sensor (ship, shore, air, even missile-seeker radars) creates a coverage picture that shifts faster than it can re-plan. The swarm's geometry breaks apart into huntable clusters. The optimizer is starving." },
+    { v:"qradar", label:"👁️ Quantum radar prototype — illuminate the swarm", hint:"Entangled-photon detection of low-signature targets", pts:0, r:"<strong>IMPOSING TOOL, WRONG PROBLEM.</strong> Quantum radar's edge is detecting STEALTH-CoATED targets by their photon-scattering signature. These drones are cheap and unshielded — your conventional radars already SEE them. The swarm simply flies around your exquisite new sensor like every other. Token spent, lesson learned." },
+    { v:"laser", label:"🔴 Directed-energy laser defense of the carrier", hint:"Speed-of-light, unlimited magazine — if you can track targets", pts:1, r:"<strong>PARTIAL SUCCESS.</strong> The laser battery burns drones one by one — spectacularly — but the swarm's adaptive geometry means every kill-line is calculated and flanked. You hold the carrier's inner ring; the outer escorts and the landing force ashore take hits." },
+    { v:"hpm", label:"⚡ High-power microwave area burst", hint:"Fry the drones' electronics across a sector", pts:1, r:"<strong>PARTIAL SUCCESS.</strong> The HPM burst drops a mass of cheap drones at once — the swarm responds by dispersing into a wide, loose mesh beyond your emitter's footprint, then reconstitutes. You bought time and altitude, not victory." },
+    { v:"elint", label:"📻 Quantum ELINT intercept of the control links", hint:"Read the swarm's command signals, then seize them", pts:0, r:"<strong>ELECTRONIC WARFARE MEETS PHYSICS.</strong> You isolate the control links perfectly — and find them utterly unreadable: noise-floor-clean, quantum-keyed (QKD), with no key exchange to intercept. You cannot jam what you cannot synchronize against. The swarm flies on." },
+    { v:"cyber", label:"🦠 Cyber counter-swarm — inject takeover commands", hint:"Hack the swarm's command layer", pts:0, r:"<strong>REJECTED AT THE DOOR.</strong> The injection lands on links armored by QKD-derived keys — tampering is physically detectable, and the channel refuses you. Worse, the adversary now knows you tried." },
+  ],
+  aftermath:{ fail:"⚠️ CONSEQUENCE: Swarm attrition is unsustainable. RED ADVANTAGE rises — the carrier group must tighten formation, limiting your options in the final act." }
+},
+{
+  id: 4, title: "ACT IV — THE BROKEN KEY",
+  tag: "C2 / COMMAND ASSURANCE",
+  brief: `
+    <p><span class="tag">C2</span> 18:30. Intelligence confirms what the whispering net hinted: a hostile quantum-computing program has <strong>broken your legacy public-key cryptography</strong>. Every secret you ever sent over it — fleet dispositions, patrol cycles, logistics chains — must be considered compromised. Tomorrow at dawn you must transmit the <strong>strike order for the decisive operation</strong>: the coordinated strike that will end this.</p>
+    <br>
+    <p>One decision seals the pipeline for tomorrow's order:</p>`,
+  options: [
+    { v:"pqcsuite", label:"🔐 Full post-quantum crypto suite across the task force", hint:"Migrate every channel — the permanent answer", pts:2, r:"<strong>DECISIVE MOVE.</strong> The full PQC rollout closes every door the adversary walked through. Tomorrow's strike order travels over algorithms their computer cannot break — and so does every order after that, for years. (Bonus if you began migration in Act I — continuity pays.)" },
+    { v:"otp", label:"🗝️ One-time pad channel for the strike order only", hint:"Absolute secrecy, once — the old-school quantum-proof method", pts:1, r:"<strong>SAFE SHOT, SINGLE SHOT.</strong> The strike order itself is invulnerable — provably so. But everything else — logistics,协调, follow-on orders — still runs on broken legacy crypto. You protected the spearhead, not the shaft." },
+    { v:"hybrid", label:"🔗 Hybrid classical-PQC bridge for the operation", hint:"Layered classical and post-quantum schemes during transition", pts:1, r:"<strong>PRAGMATIC.</strong> Hybrid schemes are the textbook interim step and would have been ideal months ago — today they halve your exposure but leave transitional dependencies the adversary knows how to watch." },
+    { v:"qkdbackbone", label:"📡 QKD backbone between fleet, HQ and strike groups", hint:"Physics-secured key distribution for the core network", pts:1, r:"<strong>SECURE TRUNKS, WEAK BRANCHES.</strong> The fiber and free-space QKD links between capitals of your network are magnificent — but your tactical edge nodes, ships and aircraft, still key their traffic with broken algorithms. The strike order's last mile leaks." },
+    { v:"silence", label:"🔇 Radio silence — couriers carry the strike order", hint:"Nothing radiates, nothing can be read", pts:0, r:"<strong>AIRTIGHT AND ASHORE.</strong> The order arrives — hours late, unacknowledged, at walking pace. Dawn synchronization dissolves; the strike goes piecemeal and the advantage evaporates in coordination friction." },
+    { v:"rotate", label:"🔁 Rapid legacy-key rotation every 30 minutes", hint:"Outpace the decryption with sheer churn", pts:0, r:"<strong>OUTDATED THINKING.</strong> A cryptanalytic break does not chase keys — it breaks the MATH. New keys made the same way fall the same way, and your adversary's harvest smiles at the churn." },
+  ],
+  aftermath:{ fail:"⚠️ CONSEQUENCE: At least part of the strike plan traverses compromised channels. RED ADVANTAGE rises — expect the adversary to reinforce exactly where you intend to strike." }
+},
+{
+  id: 5, title: "ACT V — THE STACK",
+  tag: "SYNTHESIS",
+  brief: `
+    <p><span class="tag">FINAL</span> 21:00, eve of the strike. The staff chief turns to you: <em>"All right — before we commit, tell us plainly: WHAT is the adversary actually fielding? Which combination of technologies explains everything we have seen — the perfect ambush, the invisible tracking, the unreadable swarm, the broken secrets? Give me your read, and we plan the campaign around it."</em></p>
+    <br>
+    <p>This final answer determines how your whole force invests for the next decade. Choose the adversary's true stack:</p>`,
+  options: [
+    { v:"fullstack", label:"💻+🧲+📡 Full quantum convergence: QC cryptanalysis & optimization, quantum magnetometric sensing, QKD control links", hint:"One integrated system explaining every symptom", pts:3, r:"<strong>EXACTLY RIGHT.</strong> Quantum COMPUTING explained both the impossible decryption (harvest-now-decrypt-later) and the swarm's predictive genius. Quantum SENSING — magnetometry over the sub, a gravimetric-revealed undersea node field — explained the invisible tracking. Quantum COMMUNICATION (QKD) explained the unreadable links. One stack, one campaign. Your response must be one system too." },
+    { v:"cyberonly", label:"💻 Quantum computing alone — all effects are decryption and optimization artifacts", hint:"A single wonder-machine behind everything", pts:1, r:"<strong>PARTIAL READ.</strong> True for the crypto and the swarm's cleverness — but no computer, however quantum, explains a submarine tracked from silence. You are still blind below the waves." },
+    { v:"sensingonly", label:"🧲 Predominantly quantum sensing — they simply see everything you do", hint:"Attributing all events to superior observation", pts:1, r:"<strong>HALF THE PICTURE.</strong> Explains the sub, even parts of the ambush. Misses why your secrets flowed out wholesale and why the swarm played chess against your radar." },
+    { v:"commsonly", label:"📡 Quantum communications dominance — they coordinate faster and safer than you", hint:"An information-network advantage", pts:0, r:"<strong>MISREAD.</strong> Perfect links explain the swarm's coordination — but not the decryption, and not the shadowing of a silent submarine." },
+    { v:"psych", label:"🎭 Mostly deception and cyber tradecraft — quantum is a decoy story", hint:"Doubting the quantum narrative entirely", pts:0, r:"<strong>SKEPTICISM COST YOU.</strong> A tempting and fashionable doubt — but the evidence stacks: broken math, silent tracking, unreadable links. The stack is real, and you planned the decade for ghosts." },
+    { v:"airgapped", label:"🌀 The submarine, swarm and leaks are unrelated incidents — no unified adversary design", hint:"Coincidence and friction of war", pts:0, r:"<strong>TACTICAL MYOPIA.</strong> Three coincidences, perfectly synchronized, from an adversary known to invest billions in quantum programs. The pattern was the message — and it was addressed to you." },
+  ],
+  aftermath:{}
+}
+];
+
+// ═══════════════ GAME ENGINE ═══════════════
+let currentAct = 0;
+let score = 0;
+let threat = 2;          // RED ADVANTAGE meter
+let clueLog = [];
+let actHistory = [];     // {actId, choice, pts}
+let pqcEarly = false;    // synergy tracker
+
+const THREAT_LABELS = ["RED ADVANTAGE: LOW","RED ADVANTAGE: MODERATE","RED ADVANTAGE: HIGH","RED ADVANTAGE: CRITICAL"];
+
+function startGame(){
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('progress').classList.remove('hidden');
+  renderAct(0);
+}
+
+function renderAct(i){
+  currentAct = i;
+  const act = ACTS[i];
+  document.getElementById('hud-act').textContent = act.title.split('—')[0].trim();
+  updateHud();
+  document.querySelectorAll('#progress div').forEach((d,idx)=> d.classList.toggle('done', idx <= i));
+
+  document.getElementById('act-brief').innerHTML = `<h2>${act.title} <span class="tag">${act.tag}</span></h2><div class="sit">${act.brief}</div>`;
+
+  let html = `<h2>your move</h2>`;
+  act.options.forEach((opt, idx) => {
+    html += `
+      <label class="option"><input type="radio" name="act" value="${idx}">
+        <strong>${opt.label}</strong>
+        <div class="hint">${opt.hint}</div>
+      </label>`;
+  });
+  html += `<br><button class="primary" id="commit-btn" onclick="commitChoice()" disabled>🔒 COMMIT DECISION</button>
+           <p class="small-note" style="text-align:center;margin-top:8px;">Choose one — there is no taking it back.</p>`;
+  document.getElementById('act-options').innerHTML = html;
+  document.getElementById('act-resolution').classList.add('hidden');
+
+  document.querySelectorAll('#act-options input').forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.querySelectorAll('#act-options .option').forEach(o=>o.classList.remove('selected'));
+      radio.closest('.option').classList.add('selected');
+      document.getElementById('commit-btn').disabled = false;
+    });
+  });
+  window.scrollTo(0,0);
+}
+
+function commitChoice(){
+  const sel = document.querySelector('input[name="act"]:checked');
+  if(!sel) return;
+  const act = ACTS[currentAct];
+  const opt = act.options[parseInt(sel.value)];
+
+  actHistory.push({actId: act.id, choice: opt.v, pts: opt.pts});
+  let delta = (2 - opt.pts) ; if(act.id===5) delta = 0; // act V doesn't raise threat
+  if(opt.pts === 0) threat = Math.min(3, threat + 1);
+  if(act.id === 1) pqcEarly = (opt.v === 'pqc' || opt.v === 'forensic');
+
+  // Synergy bonus: full PQC in Act IV after PQC/forensics in Act I
+  let bonus = 0;
+  if(act.id === 4 && opt.v === 'pqcsuite' && pqcEarly){ bonus = 1; }
+
+  score += opt.pts + bonus;
+  if(opt.clue) clueLog.push(opt.clue);
+
+  let cls = opt.pts === 2 ? 'result-full' : (opt.pts >= 1 ? 'result-part' : 'result-none');
+  if(act.id===5) cls = opt.pts === 3 ? 'result-full' : (opt.pts >= 1 ? 'result-part' : 'result-none');
+
+  let resHtml = `<h2>resolution</h2>
+    <div class="result-card ${cls}">
+      <p><strong>${opt.label}</strong></p><br>
+      <p>${opt.r}</p>
+      ${opt.clue ? `<div class="clue">📌 <strong>CLUE GAINED:</strong> ${opt.clue}</div>` : ''}
+      ${bonus ? `<div class="clue">⭐ <strong>CONTINUITY BONUS +1:</strong> Because you began post-quantum measures back in Act I, the full rollout completes before the strike window. Preparedness compounds.</div>` : ''}
+    </div>`;
+
+  if(opt.pts === 0 && act.aftermath && act.afteraftermath !== undefined) {}
+  if(opt.pts === 0 && act.aftermath && act.aftermath.fail) resHtml += `<div class="result-card result-none"><p>${act.aftermath.fail}</p></div>`;
+
+  const last = currentAct === ACTS.length - 1;
+  resHtml += last
+    ? `<button class="primary" onclick="showFinal()">🎖️ SEE FINAL ASSESSMENT</button>`
+    : `<button class="primary" onclick="renderAct(${currentAct+1})">▶ CONTINUE — ${ACTS[currentAct+1].title.split('—')[0].trim()}</button>`;
+
+  document.getElementById('act-options').innerHTML = `<p class="small-note">Decision committed. Scroll for resolution.</p>`;
+  const res = document.getElementById('act-resolution');
+  res.innerHTML = resHtml;
+  res.classList.remove('hidden');
+  updateHud();
+  res.scrollIntoView({behavior:'smooth'});
+}
+
+function updateHud(){
+  document.getElementById('hud-threat').textContent = THREAT_LABELS[threat];
+  document.getElementById('hud-threat').className = 'threat' + (threat <= 1 ? ' low' : '');
+}
+
+function showFinal(){
+  // Act V penalty: if strike plan leaked (Act IV not fully secured) and threat high
+  const act4 = actHistory.find(h => h.actId === 4);
+  let leaked = act4 && act4.pts < 2;
+  const act5 = actHistory[actHistory.length-1];
+
+  let html = '';
+  actHistory.forEach(h => {
+    const act = ACTS[h.actId-1];
+    const opt = act.options.find(o => o.v === h.choice);
+    const bad = h.pts === 0;
+    html += `<div class="result-card ${bad ? 'result-none' : (h.pts >= 2 || h.actId===5 && h.pts===3 ? 'result-full' : 'result-part')}">
+      <p><strong>${act.title}</strong></p>
+      <p style="font-size:.9em;">Chose: <em>${opt.label}</em> — ${h.pts} point${h.pts===1?'s':''}${h.actId===5&&h.pts===3?'s':''}</p>
+    </div>`;
+  });
+
+  if(leaked && threat >= 3){
+    html += `<div class="result-card result-none"><p>⚠️ <strong>CAMPAIGN PENALTY −1:</strong> Parts of your strike order traveled compromised channels, and the adversary reinforced at the exact point of your main effort. The strike succeeds — bloodier than it should have been.</p></div>`;
+    score -= 1;
+  }
+  if(clueLog.length > 0){
+    html += `<div class="clue">📌 <strong>INTELLIGENCE RECOVERED DURING PLAY:</strong><br>${clueLog.join('<br>')}</div>`;
+  }
+
+  document.getElementById('final-container').innerHTML = html;
+  document.getElementById('final-score').textContent = Math.max(0, score) + ' / 12';
+  const v = score >= 11 ? "QUANTUM FLUENCY — you read the stack like an analyst."
+    : score >= 8 ? "STRONG — convergence thinking largely mastered."
+    : score >= 5 ? "DEVELOPING — right instincts, uneven diagnosis."
+    : score >= 3 ? "FRAGMENTED — domain-by-domain thinking dominated."
+    : "OVERMATCHED — the adversary's stack won the day.";
+  document.getElementById('score-verdict').textContent = v;
+
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('progress').classList.add('hidden');
+  document.getElementById('screen-final').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
